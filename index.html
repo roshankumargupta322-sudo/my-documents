@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Documents</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,6 +24,31 @@
       text-align: center;
     }
 
+    .login {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px #ddd;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin: 6px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 11px 18px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
     .folder {
       background: white;
       padding: 18px;
@@ -32,16 +59,36 @@
       cursor: pointer;
     }
 
-    .folder:hover {
-      background: #eef5ff;
+    #documents {
+      display: none;
+    }
+
+    #message {
+      text-align: center;
+      margin: 10px;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="box">
-    <h1>📁 My Documents</h1>
+<div class="box">
+
+  <h1>📁 My Documents</h1>
+
+  <div class="login" id="loginBox">
+    <h3>🔐 Login</h3>
+
+    <input type="email" id="email" placeholder="Email address">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="login()">Login</button>
+    <button onclick="signup()">Create Account</button>
+
+    <div id="message"></div>
+  </div>
+
+  <div id="documents">
 
     <div class="folder">🪪 Aadhaar</div>
     <div class="folder">💳 PAN Card</div>
@@ -49,7 +96,88 @@
     <div class="folder">🏦 Bank Documents</div>
     <div class="folder">📸 Photos</div>
     <div class="folder">📄 Other Documents</div>
+
+    <button onclick="logout()">Logout</button>
+
   </div>
+
+</div>
+
+<script>
+
+  const SUPABASE_URL =
+    "https://dfwjpkduaidgrkjkljmx.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_tDJgaCyvP8qifiOIiooAbQ_tv4S-h_d";
+
+  const supabaseClient =
+    window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+  async function signup() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const { error } =
+      await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+      });
+
+    if (error) {
+      document.getElementById("message").innerText = error.message;
+    } else {
+      document.getElementById("message").innerText =
+        "Account ban gaya. Ab login karo.";
+    }
+  }
+
+
+  async function login() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const { error } =
+      await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+    if (error) {
+      document.getElementById("message").innerText = error.message;
+    } else {
+      showDocuments();
+    }
+  }
+
+
+  async function logout() {
+
+    await supabaseClient.auth.signOut();
+
+    document.getElementById("documents").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+  }
+
+
+  async function showDocuments() {
+
+    const { data } =
+      await supabaseClient.auth.getSession();
+
+    if (data.session) {
+      document.getElementById("loginBox").style.display = "none";
+      document.getElementById("documents").style.display = "block";
+    }
+  }
+
+
+  showDocuments();
+
+</script>
 
 </body>
 </html>
